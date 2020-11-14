@@ -11,8 +11,13 @@
 # -------------------------------------------------------------------------------
 
 import os
+from datetime import timedelta
+
+from vanaspyhelper.util.crypto import AESTool
 
 basedir = os.path.abspath(os.path.dirname(__file__))
+
+global aes
 
 class config:
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'Vanas-Hanman-Security-KEY'
@@ -21,7 +26,7 @@ class config:
     @staticmethod
     def init_app(app):
         # 初始化日志
-        from rsc.core.LoggerConf import init_global_logger
+        from vanaspyhelper.LoggerManager import init_global_logger
 
         # 要么传入配置路径，要么获取当前目录的上一级 `os.path.dirname(basedir)`
         current_dir_parent = os.path.dirname(basedir)
@@ -35,6 +40,17 @@ class config:
             log_level = app.config['APP_LOG_LEVEL']
         else:
             log_level = "error"
+
+        from konfig import Config
+
+        # 初始化 aes
+        c = Config(app.config['SECURITY_CONF_PATH'])
+
+        global aes
+        aes = AESTool(key=c.get_map('AES').get('AES_SECRET_KEY'))
+
+        # 初始化 client_id ,client_secret
+        app.config.update(c.get_map('CLIENT_DATA'))
 
         # 初始化日志对象
         init_global_logger(log_dir, level=log_level, log_prefix="VanasRSC")
@@ -56,8 +72,14 @@ class DevelopmentConfig(config):
 
     # 默认值
     DEFAULT = {
-        "IMAGE" : "/Users/alexliu/tmp/default_img.jpeg"
+        "IMAGE" : "/Users/alexliu/tmp/vanas_rsc/default_img.jpeg"
     }
+
+    # 错误编码头,防止与其他系统编码重复
+    ERROR_CODE_REX = "50{}"
+
+    # 系统安全配置文件路径
+    SECURITY_CONF_PATH = '/Users/alexliu/tmp/vanas_rsc/security.ini'
 
     # celery
     CELERY_CONFIG = {
@@ -75,6 +97,16 @@ class DevelopmentConfig(config):
         "enable_utc": False,
         "timezone": 'Asia/Shanghai',  # 默认 UTC  当`enable_utc` 不是 UTC 时，需要指定时区
         "worker_prefetch_multiplier": 20, # 默认 4 workder 进程数
+        "beat_schedule": {
+            # 定时任务
+            # 注意：添加定时任务后，调用celery 需要加上 `-B` 参数
+            'get-new-token-12-hour': {
+                # 每 12 小时获取一次新 token
+                'task': 'rsc.tasks.get_token',
+                'schedule': timedelta(hours=12),
+            },
+
+        }
     }
 
 
@@ -95,8 +127,14 @@ class TestingConfig(config):
 
     # 默认值
     DEFAULT = {
-        "IMAGE": "/Users/alexliu/tmp/default_img.jpeg"
+        "IMAGE": "/Users/alexliu/tmp/vanas_rsc/default_img.jpeg"
     }
+
+    # 错误编码头,防止与其他系统编码重复
+    ERROR_CODE_REX = "50{}"
+
+    # 系统安全配置文件路径
+    SECURITY_CONF_PATH = '/Users/alexliu/tmp/vanas_rsc/security.ini'
 
     # celery
     CELERY_CONFIG = {
@@ -114,24 +152,40 @@ class TestingConfig(config):
         "enable_utc": False,
         "timezone": 'Asia/Shanghai',  # 默认 UTC  当`enable_utc` 不是 UTC 时，需要指定时区
         "worker_prefetch_multiplier": 20,  # 默认 4 workder 进程数
+        "beat_schedule": {
+            # 定时任务
+            # 注意：添加定时任务后，调用celery 需要加上 `-B` 参数
+            'get-new-token-12-hour': {
+                # 每 12 小时获取一次新 token
+                'task': 'rsc.tasks.get_token',
+                'schedule': timedelta(hours=12),
+            },
+
+        }
     }
 
 class ProductionConfig(config):
     # 日志相关
-    APP_LOG_DIR = '/home/vanas_rsc/logs'
+    APP_LOG_DIR = '/logs'
     APP_LOG_LEVEL = "info"
 
     # 下载
-    DATA_DOWNLOAD_PATH = "/home/vanas_rsc/download"
+    DATA_DOWNLOAD_PATH = "/workdir/download"
     # 缓存、临时文件
-    DATA_TEMP_PATH = "/home/vanas_rsc/temp"
+    DATA_TEMP_PATH = "/workdir/temp"
     # 运行时
-    DATA_RUNTIME_PATH = "/home/vanas_rsc/runtime"
+    DATA_RUNTIME_PATH = "/workdir/runtime"
 
     # 默认值
     DEFAULT = {
-        "IMAGE": "/App/default_img.jpeg"
+        "IMAGE": "/workdir/default_img.jpeg"
     }
+
+    # 错误编码头,防止与其他系统编码重复
+    ERROR_CODE_REX = "50{}"
+
+    # 系统安全配置文件路径
+    SECURITY_CONF_PATH = '/workdir/security.ini'
 
     # celery
     CELERY_CONFIG = {
@@ -149,6 +203,16 @@ class ProductionConfig(config):
         "enable_utc": False,
         "timezone": 'Asia/Shanghai',  # 默认 UTC  当`enable_utc` 不是 UTC 时，需要指定时区
         "worker_prefetch_multiplier": 20,  # 默认 4 workder 进程数
+        "beat_schedule": {
+            # 定时任务
+            # 注意：添加定时任务后，调用celery 需要加上 `-B` 参数
+            'get-new-token-12-hour': {
+                # 每 12 小时获取一次新 token
+                'task': 'rsc.tasks.get_token',
+                'schedule': timedelta(hours=12),
+            },
+
+        }
     }
 
 

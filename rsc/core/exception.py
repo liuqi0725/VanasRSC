@@ -17,3 +17,13 @@ class UnKonwImageAccessCode(Exception):
 
     def __str__(self):
         return "未知的 access_code : {}".format(self.access_code)
+
+
+class AttributeNotFoundInJsonError(Exception):
+
+    def __init__(self , json_data, error_attr):
+        self.json_data = json_data
+        self.error_attr = error_attr
+
+    def __str__(self):
+        return "在 JSON 数据中缺少 {} !".format(self.error_attr)

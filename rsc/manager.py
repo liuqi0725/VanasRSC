@@ -10,11 +10,12 @@
 # @Desc     : flask框架项目启动运行文件
 # -------------------------------------------------------------------------------
 
-import os
+def main():
+    import os
+    from rsc import create_app
 
-from rsc import create_app
-
-app = create_app(os.getenv('VANAS_RSC_ENV') or 'default')
+    app = create_app(os.getenv('VANAS_RSC_ENV') or 'default')
+    app.run()
 
 if __name__ == '__main__':
-    app.run()
+    main()

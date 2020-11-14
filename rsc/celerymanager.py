@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # -------------------------------------------------------------------------------
-# @File     : __init__.py.py
-# @Created  : 2020/11/12 10:03 上午
+# @File     : celeryinit.py
+# @Created  : 2020/11/12 10:36 下午
 # @Software : PyCharm
 # 
 # @Author   : Liu.Qi
@@ -10,6 +10,6 @@
 # @Desc     : 目的?
 # -------------------------------------------------------------------------------
 
-from .ImageApi import image
+from rsc import make_celery
 
-blueprint = [image]
+celery = make_celery(app=None)
