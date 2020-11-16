@@ -22,7 +22,7 @@ RUN curl -sSL https://openresty.org/download/openresty-1.17.8.1.tar.gz \
 ENV PATH "/usr/local/openresty/bin:/usr/local/openresty/nginx/sbin:$PATH"
 
 # 设置环境变量
-ENV VANAS_TOKEN_ENV "production"
+ENV VANAS_PROJECT_ENV "production"
 
 # 复制 根目录(.) 所有文件到 app 中
 COPY . /app

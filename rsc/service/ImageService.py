@@ -12,10 +12,9 @@
 import os
 from flask import current_app
 from vanaspyhelper.LoggerManager import log
-from vanaspyhelper.util.crypto import AESTool
 from rsc.core.exception import UnKonwImageAccessCode, AttributeNotFoundInJsonError
 from rsc.handler.DownloadHandler import DownloadTaskType
-from rsc.tasks import download_file
+from rsc.celery_task import download_file
 
 mdict = {
     'jpeg': 'image/jpeg',
@@ -26,10 +25,6 @@ mdict = {
 }
 
 class ImageService():
-
-    def __init__(self):
-        aes_key = current_app.config["AES_KEY"]
-        self.aes = AESTool(key=aes_key)
 
     def process_download_request(self,json_data):
         """
@@ -51,7 +46,7 @@ class ImageService():
 
         # 添加到下载任务
         log.info("处理下载图像数据请求: 添加【下载图像】任务到队列. client_name: %s , id: %s ", client_name, id)
-        download_file(DownloadTaskType.IMAGE, id, url, client_name, source_name, callback, filename)
+        download_file.delay(DownloadTaskType.IMAGE.value, id, url, client_name, source_name, callback, filename)
 
     def _get_json_param(self,json_data:dict, attr_name:str ,default=None, nullable:bool=False):
         """
@@ -80,9 +75,9 @@ class ImageService():
         :param access_code: 访问码
         :return: (image_data,mime)
         """
-
+        from rsc.config import aes
         try:
-            imgPath = self.aes.decrypt(access_code)
+            imgPath = aes.decrypt(access_code)
         except:
             raise UnKonwImageAccessCode(access_code)
 

@@ -10,7 +10,7 @@
 # @Desc     : 图像api
 # -------------------------------------------------------------------------------
 
-from flask import Blueprint,request
+from flask import Blueprint, request, jsonify,current_app
 from vanaspyhelper.util.request import E400,render_json,json_res_success
 from vanaspyhelper.wraps.token import token_required
 
@@ -57,18 +57,12 @@ def download_image():
 
         # 头部必须是 Content-Type: application/json
         json_data = request.get_json()
-
-        # id = request.args.get("id")                 # id 客户端可以用该 id 是什么。 callback 时回调
-        # url = request.args.get("url")               # 下载 url
-        # type = request.args.get("type")             # 类型 JPG|GIF|BMP|JPEG|PNG 选一个
-        # priority = request.args.get("priority")     # 优先级
-        # save_path = request.args.get("save_path")   # 保存路径
-        # callback = request.args.get("callback")     # 回调地址
-
         service = ImageService()
         service.process_download_request(json_data)
         return render_json(json_res_success())
     except Exception as e:
+        import traceback
+        traceback.print_exc()
         return E400(str(e))
 
 
@@ -93,5 +87,26 @@ def access_image(access_code:str):
         image_data, mime = service.get_image(access_code)
         data = json_res_success({"image":image_data, "mime":mime})
         return render_json(data)
+    except Exception as e:
+        return E400(str(e))
+
+@image.route("/down/callback", methods=['POST'])
+@token_required
+def test_call_back():
+    """
+    下载图像
+    post header : {
+        Content-Type: application/json,
+        access_token: access_token from vans-token-manager
+        client_id:    client_id from vans-token-manager conf. create by developers.
+    }
+
+    :return:
+    """
+    try:
+        json_data = request.get_json()
+
+        print("callback:",json_data)
+        return render_json(json_res_success())
     except Exception as e:
         return E400(str(e))

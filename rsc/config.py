@@ -81,14 +81,21 @@ class DevelopmentConfig(config):
     # 系统安全配置文件路径
     SECURITY_CONF_PATH = '/Users/alexliu/tmp/vanas_rsc/security.ini'
 
+    REQUEST_PROXY = {
+        "enable":True,
+        "ip": "127.0.0.1",
+        "port": 10000,
+        "type": "http"
+    }
+
     # celery
     CELERY_CONFIG = {
         # Broker settings.
-        "broker_url" : 'redis://:fxredis0725@192.168.0.198:6379/3',      # 使用Redis作为消息代理
+        "broker_url" : 'redis://:springuseful123456@localhost:6379/3',      # 使用Redis作为消息代理
         # Result_BACKEND
-        "result_backend": 'redis://:fxredis0725@192.168.0.198:6379/4',  # 把任务结果存在了Redis
+        "result_backend": 'redis://:springuseful123456@localhost:6379/4',  # 把任务结果存在了Redis
         # List of modules to import when the Celery worker starts.
-        "imports": ('rsc.tasks'),
+        "imports": ('rsc.celery_task'),
         # Result serialization format.
         "task_serializer": 'msgpack', # 任务序列化和反序列化使用msgpack方案
         "result_serializer": 'json',  # 读取任务结果一般性能要求不高，所以使用了可读性更好的JSON
@@ -102,7 +109,7 @@ class DevelopmentConfig(config):
             # 注意：添加定时任务后，调用celery 需要加上 `-B` 参数
             'get-new-token-12-hour': {
                 # 每 12 小时获取一次新 token
-                'task': 'rsc.tasks.get_token',
+                'task': 'rsc.celery_task.get_token',
                 'schedule': timedelta(hours=12),
             },
 
@@ -136,6 +143,13 @@ class TestingConfig(config):
     # 系统安全配置文件路径
     SECURITY_CONF_PATH = '/Users/alexliu/tmp/vanas_rsc/security.ini'
 
+    REQUEST_PROXY = {
+        "enable": True,
+        "ip": "127.0.0.1",
+        "port": 10000,
+        "type": "http"
+    }
+
     # celery
     CELERY_CONFIG = {
         # Broker settings.
@@ -143,7 +157,7 @@ class TestingConfig(config):
         # Result_BACKEND
         "result_backend": 'redis://:fxredis0725@192.168.0.198:6379/4',  # 把任务结果存在了Redis
         # List of modules to import when the Celery worker starts.
-        "imports": ('rsc.tasks'),
+        "imports": ('rsc.celery_task'),
         # Result serialization format.
         "task_serializer": 'msgpack',  # 任务序列化和反序列化使用msgpack方案
         "result_serializer": 'json',  # 读取任务结果一般性能要求不高，所以使用了可读性更好的JSON
@@ -157,7 +171,7 @@ class TestingConfig(config):
             # 注意：添加定时任务后，调用celery 需要加上 `-B` 参数
             'get-new-token-12-hour': {
                 # 每 12 小时获取一次新 token
-                'task': 'rsc.tasks.get_token',
+                'task': 'rsc.celery_task.get_token',
                 'schedule': timedelta(hours=12),
             },
 
@@ -187,6 +201,13 @@ class ProductionConfig(config):
     # 系统安全配置文件路径
     SECURITY_CONF_PATH = '/workdir/security.ini'
 
+    REQUEST_PROXY = {
+        "enable": True,
+        "ip": "127.0.0.1",
+        "port": 10000,
+        "type": "http"
+    }
+
     # celery
     CELERY_CONFIG = {
         # Broker settings.
@@ -194,7 +215,7 @@ class ProductionConfig(config):
         # Result_BACKEND
         "result_backend": 'redis://:fxredis0725@192.168.0.198:6379/4',  # 把任务结果存在了Redis
         # List of modules to import when the Celery worker starts.
-        "imports": ('rsc.tasks'),
+        "imports": ('rsc.celery_task'),
         # Result serialization format.
         "task_serializer": 'msgpack',  # 任务序列化和反序列化使用msgpack方案
         "result_serializer": 'json',  # 读取任务结果一般性能要求不高，所以使用了可读性更好的JSON
@@ -208,7 +229,7 @@ class ProductionConfig(config):
             # 注意：添加定时任务后，调用celery 需要加上 `-B` 参数
             'get-new-token-12-hour': {
                 # 每 12 小时获取一次新 token
-                'task': 'rsc.tasks.get_token',
+                'task': 'rsc.celery_task.get_token',
                 'schedule': timedelta(hours=12),
             },
 

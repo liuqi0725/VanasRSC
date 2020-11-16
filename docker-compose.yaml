@@ -7,7 +7,7 @@ services:
             context: .
             dockerfile: docker/Dockerfile
         # 镜像名称
-        image: vanas/ResourcesCloud
+        image: vanas/resources-cloud
         ports:
             - "9000:5000"
         volumes:

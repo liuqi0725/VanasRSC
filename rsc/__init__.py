@@ -12,37 +12,35 @@
 
 
 from flask import Flask
-from celery import Celery
-from rsc.config import config,basedir
 
-# Celery相关配置
-CELERY_RESULT_BACKEND= "redis://localhost:6379/0"
-CELERY_BROKER_URL= "redis://localhost:6379/0"
+from rsc.config import config,basedir
+from celery import Celery
 
 def create_app(config_name):
     app=Flask(__name__)
     app.config.from_object(config[config_name])
     config[config_name].init_app(app)
 
-    app.app_context().push()
-
     # 初始化蓝图
     register_blueprint(app)
     return app
 
-def make_celery(app=None):
+def make_celery(app):
     import os
 
-    app = app or create_app(os.getenv('VANAS_RSC_ENV')or 'default')
-    celery=Celery(__name__)
+    app = app or create_app(os.getenv('VANAS_PROJECT_ENV') or 'default')
+
+    # 关键点，往celery推入flask信息，使得celery能使用flask上下文
+    app.app_context().push()
+
+    celery = Celery(app.import_name)
     celery.conf.update(app.config['CELERY_CONFIG'])
 
-    TaskBase= celery.Task
-    class ContextTask(TaskBase):
-        abstract= True
-        def __call__(self,*args,**kwargs):
+    class ContextTask(celery.Task):
+        # 将app_context 包含在celery.Task中，这样让其他的Flask扩展也能正常使用
+        def __call__(self, *args, **kwargs):
             with app.app_context():
-                    return TaskBase.__call__(self,*args,**kwargs)
+                return self.run(*args, **kwargs)
 
     celery.Task = ContextTask
     return celery

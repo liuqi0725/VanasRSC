@@ -12,13 +12,13 @@
 
 from rsc.handler.DownloadHandler import DownloadHandler, DownloadTaskType, get_token_handler
 from rsc.handler.RequestHandler import callback
-from .celerymanager import celery
+from rsc.celerymanager import celery
 
 @celery.task()
-def download_file(type:DownloadTaskType, id, url:str, client_name:str, source_name:str, callback:str,filename:str=None):
+def download_file(task_type:str, id, url:str, client_name:str, source_name:str, callback:str,filename:str=None):
     """
     下载文件任务
-    :param type: DownloadTaskType 枚举类型
+    :param task_type: DownloadTaskType 枚举类型的值
     :param id: task_id 客户端传递的
     :param url: 文件 url
     :param filename: 客户端传递 filename 可以为空
@@ -31,7 +31,7 @@ def download_file(type:DownloadTaskType, id, url:str, client_name:str, source_na
 
     handler = DownloadHandler()
     # 下载
-    result = handler.download(type, id, url, filename , client_name, source_name, callback)
+    result = handler.download(task_type, id, url, filename , client_name, source_name, callback)
     return result
 
 @celery.task()

@@ -37,10 +37,10 @@ class CreateCallbackDataError(Exception):
 
 class DownloadHandler():
 
-    def download(self, type:DownloadTaskType, id, url:str, filename:str, client_name:str, resource_type:str, callback_url:str):
+    def download(self, task_type, id, url:str, filename:str, client_name:str, resource_type:str, callback_url:str):
         """
         参数参考 各下载文件 api
-        :param type:
+        :param task_type:
         :param id:
         :param url:
         :param filename:
@@ -52,17 +52,17 @@ class DownloadHandler():
 
         try:
             # 获取本地保存路径
-            local_save = self._get_local_save_path(client_name, resource_type, filename)
+            local_save_path = self._get_local_save_path(client_name, resource_type, filename)
             # 查询文件是否存在
-            if fileExist(local_save):
-                log.warning("下载文件： 文件已存在。请勿重复下载! URL: %s , LOCAL: %s", url, local_save)
+            if fileExist(local_save_path):
+                log.warning("下载文件： 文件已存在。请勿重复下载! URL: %s , LOCAL: %s", url, local_save_path)
                 # 存在就立即触发 成功回调
-                callback_data = self._create_success_callback_data(id, local_save, type)
+                callback_data = self._create_success_callback_data(id, local_save_path, task_type)
             else:
                 # 发送下载请求
                 try:
-                    download_file_as_stream(get_file_stream(url), local_save, filename)
-                    callback_data = self._create_success_callback_data(id, local_save, type)
+                    download_file_as_stream(get_file_stream(url), local_save_path, filename)
+                    callback_data = self._create_success_callback_data(id, local_save_path, task_type)
                 except Exception as e:
                     log.exception("下载文件: 失败! URL:{}".format(url), exc_info=True)
                     callback_data = json_res_failure("下载文件: 失败! ID:{} , URL:{}".format(id, url),AppErrorCode.DOWNLOAD_ERROR.value, str(e))
@@ -84,6 +84,9 @@ class DownloadHandler():
         :param filename:
         :return:
         """
+
+        print(filename)
+
         from vanaspyhelper.util.common import md5
 
         download_path = current_app.config['DATA_DOWNLOAD_PATH']
@@ -96,6 +99,8 @@ class DownloadHandler():
         if filename is None:
             # 用时间戳 + md5 作为文件名
             filename = md5(str(time.time())) + ".jpg"
+
+        print(local_save_dir , filename)
 
         local_save_path = os.path.join(local_save_dir, filename)
 
@@ -110,7 +115,7 @@ class DownloadHandler():
         from rsc.config import aes
         return aes.encrypt(local_save)
 
-    def _create_success_callback_data(self,id, local_save, type:DownloadTaskType):
+    def _create_success_callback_data(self,id, local_save, task_type):
 
         try:
             # 创建 access_code
@@ -119,7 +124,7 @@ class DownloadHandler():
             res = {
                 "id": id,
                 "access_code": access_code,
-                "task": type.value,
+                "task": task_type,
             }
             # 组装成功回调数据
             return json_res_success(res)

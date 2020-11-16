@@ -9,7 +9,6 @@
 # 
 # @Desc     : 目的?
 # -------------------------------------------------------------------------------
-import json
 import time
 from vanaspyhelper.LoggerManager import log
 from vanaspyhelper.util.request import build_proxies, do_get, get_user_agent_mobile, get_user_agent_remote, request_json
@@ -73,13 +72,13 @@ def get_mobile_header():
 
 def __get_proxy():
     from flask import current_app
-    proxy_enable = current_app.config['CUSTOMER_CONF']['proxy']['enable']
+    proxy_enable = current_app.config['REQUEST_PROXY']['enable']
 
     # if sys.spider_conf.proxy_enable:
     if proxy_enable:
-        proxy_ip = current_app.config['CUSTOMER_CONF']['proxy']['ip']
-        proxy_port = current_app.config['CUSTOMER_CONF']['proxy']['port']
-        proxy_type = current_app.config['CUSTOMER_CONF']['proxy']['type']
+        proxy_ip = current_app.config['REQUEST_PROXY']['ip']
+        proxy_port = current_app.config['REQUEST_PROXY']['port']
+        proxy_type = current_app.config['REQUEST_PROXY']['type']
 
         proxies = build_proxies(proxy_ip, proxy_port, proxy_type)
         # proxies = build_proxies(sys.spider_conf.proxy_ip, sys.spider_conf.proxy_port, sys.spider_conf.proxy_type)
@@ -137,12 +136,11 @@ def get_file_stream(url, force_mobile:bool=True, retry:int=3):
 
     return (response,url)
 
-def download_file_as_stream(stream_data , download_path , filename , retry=3, timeout=600):
+def download_file_as_stream(stream_data , filepath:str , filename:str, retry=3, timeout=600):
     """
     下载文件按进度，按流处理
     :param stream_data: request 请求回来的 content 及 下载 url 【元祖】
-    :param filename: 文件名
-    :param download_path: 下载路径
+    :param filepath: 下载路径，包含文件名
     :param retry: 重试次数 默认 3
     :parma timeout: 超时时间 默认 60 秒
     :return:
@@ -156,8 +154,6 @@ def download_file_as_stream(stream_data , download_path , filename , retry=3, ti
     processed = 0
 
     start_time = time.time()
-
-    filepath = download_path + filename
 
     with open(filepath, 'wb') as file:
         try:
@@ -182,7 +178,7 @@ def download_file_as_stream(stream_data , download_path , filename , retry=3, ti
             if retry > 0:
                 retry -= retry
                 log.warning("重新根据文件流下载文件到本地 ! URL:[{}] , Local_save:[{}]".format(url,filepath))
-                download_file_as_stream(stream_data, download_path , filename, retry, timeout)
+                download_file_as_stream(stream_data, filepath , filename, retry, timeout)
             else:
                 # 3次重试失败
                 raise FileDownloadSaveTimeOutError(url)
@@ -203,14 +199,18 @@ def callback(url, data:dict, retry:int=1):
     if retry > 20:
         raise CallBackRetryMaximumError(url)
 
-    from rsc.tasks import retry_callback
+    from rsc.celery_task import retry_callback
 
     try:
         rep = request_json(url,data)
         if(rep['success'] == int(False)):
-            log.error("调用 Callback 失败! URL: %s, RESULT: %s".format(url, rep))
+            retry = retry + 1
+            log.error("调用 Callback 失败! 重试次数:{} , URL: {}, RESULT: {} ".format(str(retry),url, rep))
             # 添加到 task 重试
-            retry_callback(url,data,(retry+1))
-    except:
+            retry_callback(url,data,retry)
+    except CallBackRetryMaximumError as e:
+        # 超过最大重试次数
+        log.error(str(e))
+    except :
         # 异常，添加到 task 重试
         retry_callback(url,data,(retry+1))
