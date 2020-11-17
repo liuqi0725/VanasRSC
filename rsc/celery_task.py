@@ -10,8 +10,6 @@
 # @Desc     : 目的?
 # -------------------------------------------------------------------------------
 
-from rsc.handler.DownloadHandler import DownloadHandler, DownloadTaskType, get_token_handler
-from rsc.handler.RequestHandler import callback
 from rsc.celerymanager import celery
 
 @celery.task()
@@ -28,6 +26,8 @@ def download_file(task_type:str, id, url:str, client_name:str, source_name:str, 
     :param callback: 回调地址
     :return:
     """
+    from rsc.handler.DownloadHandler import DownloadHandler
+
     handler = DownloadHandler()
     # 下载
     result = handler.download(task_type, id, url, filename , client_name, source_name, callback)
@@ -39,6 +39,8 @@ def retry_callback(url:str, data:dict, retry:int):
     回调重试
     :return:
     """
+    from rsc.handler.RequestHandler import callback
+
     callback(url, data , retry)
     return None
 
@@ -48,4 +50,6 @@ def get_token():
     每 12 小时获取一次新 token
     :return:
     """
+    from rsc.handler.DownloadHandler import get_token_handler
+
     get_token_handler()
