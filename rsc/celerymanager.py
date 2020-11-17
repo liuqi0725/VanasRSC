@@ -9,7 +9,7 @@
 # 
 # @Desc     : 目的?
 # -------------------------------------------------------------------------------
-
+import os
 from rsc import make_celery
-celery = make_celery(app=None)
 
+celery = make_celery()

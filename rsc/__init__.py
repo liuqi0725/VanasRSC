@@ -25,13 +25,13 @@ def create_app(config_name):
     register_blueprint(app)
     return app
 
-def make_celery(app):
+def make_celery(app=None):
     import os
 
     app = app or create_app(os.getenv('VANAS_PROJECT_ENV') or 'default')
 
     # 关键点，往celery推入flask信息，使得celery能使用flask上下文
-    app.app_context().push()
+    # app.app_context().push()
 
     celery = Celery(app.import_name)
     celery.conf.update(app.config['CELERY_CONFIG'])

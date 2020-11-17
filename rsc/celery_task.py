@@ -28,7 +28,6 @@ def download_file(task_type:str, id, url:str, client_name:str, source_name:str, 
     :param callback: 回调地址
     :return:
     """
-
     handler = DownloadHandler()
     # 下载
     result = handler.download(task_type, id, url, filename , client_name, source_name, callback)

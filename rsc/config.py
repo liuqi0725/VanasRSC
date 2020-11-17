@@ -75,9 +75,6 @@ class DevelopmentConfig(config):
         "IMAGE" : "/Users/alexliu/tmp/vanas_rsc/default_img.jpeg"
     }
 
-    # 错误编码头,防止与其他系统编码重复
-    ERROR_CODE_REX = "50{}"
-
     # 系统安全配置文件路径
     SECURITY_CONF_PATH = '/Users/alexliu/tmp/vanas_rsc/security.ini'
 
@@ -137,9 +134,6 @@ class TestingConfig(config):
         "IMAGE": "/Users/alexliu/tmp/vanas_rsc/default_img.jpeg"
     }
 
-    # 错误编码头,防止与其他系统编码重复
-    ERROR_CODE_REX = "50{}"
-
     # 系统安全配置文件路径
     SECURITY_CONF_PATH = '/Users/alexliu/tmp/vanas_rsc/security.ini'
 
@@ -194,9 +188,6 @@ class ProductionConfig(config):
     DEFAULT = {
         "IMAGE": "/workdir/default_img.jpeg"
     }
-
-    # 错误编码头,防止与其他系统编码重复
-    ERROR_CODE_REX = "50{}"
 
     # 系统安全配置文件路径
     SECURITY_CONF_PATH = '/workdir/security.ini'

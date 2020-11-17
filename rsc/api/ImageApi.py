@@ -67,7 +67,7 @@ def download_image():
 
 
 @image.route("/image/access/<access_code>", methods=['POST'])
-@token_required
+# @token_required
 def access_image(access_code:str):
     """
     下载图像
@@ -91,7 +91,7 @@ def access_image(access_code:str):
         return E400(str(e))
 
 @image.route("/down/callback", methods=['POST'])
-@token_required
+# @token_required
 def test_call_back():
     """
     下载图像

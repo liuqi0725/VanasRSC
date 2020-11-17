@@ -12,11 +12,9 @@
 
 from enum import Enum
 
-from flask import current_app
 
 class AppErrorCode(Enum):
+    DOWNLOAD_ERROR = 5001
+    CREATE_CALLBACK_DATA_ERROR = 5002
 
-    DOWNLOAD_ERROR = int(current_app.config['ERROR_CODE_REX'].format("01"))
-    CREATE_CALLBACK_DATA_ERROR = int(current_app.config['ERROR_CODE_REX'].format("02"))
-
-    UNKNOW_ERROR = int(current_app.config['ERROR_CODE_REX'].format("99"))
+    UNKNOW_ERROR = 5099
